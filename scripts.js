@@ -17,8 +17,6 @@ const Modal = {
       }
   }
 
-  
-
   const transactions = [
   {
       id: 1,
@@ -42,15 +40,44 @@ const Modal = {
 ]
 
   const Transaction = {
-      incomes() {
-          //somar as entradas 
-      },
-      expenses() {
-          //somar as saídas 
-      },
-      total() {
+    all: transactions,
+
+    add(transaction) {
+        Transaction.all.push(transaction)
+    },
+
+    incomes() {
+          let income = 0;
+          // pegar todas as transações
+          // para cada transação
+          Transaction.all.forEach(transaction => {
+            //se ela for maior que zero
+            if( transaction.amount > 0 ) {
+              // somar a uma variavel e retornar a variavel
+              income += transaction.amount;
+            }
+          }) 
+          return income;
+    },
+
+    expenses() {
+        // pegar todas as transações
+        // para cada transação
+        let expense = 0;
+        Transaction.all.forEach(transaction => {
+          // se ela for menor que zero
+          if( transaction.amount < 0 ) {
+            // somar a uma variavel e retornar a variavel
+            expense += transaction.amount;
+          }
+        }) 
+        return expense; 
+    },
+
+    total() {
           //entradas - saídas
-      }
+          return Transaction.incomes() + Transaction.expenses();
+    }
   }
 
   const DOM = {
@@ -76,6 +103,18 @@ const Modal = {
       </td>
       `
       return html
+    },
+
+    updateBalance() {
+      document
+          .getElementById('incomeDisplay')
+          .innerHTML = Utils.formatCurrency(Transaction.incomes())
+      document
+          .getElementById('expenseDisplay')
+          .innerHTML = Utils.formatCurrency(Transaction.expenses())
+      document
+          .getElementById('totalDisplay')
+          .innerHTML = Utils.formatCurrency(Transaction.total())
     }
   }
 
@@ -99,3 +138,5 @@ const Utils = {
 transactions.forEach(function(transaction) {
   DOM.addTransaction(transaction)
 })
+
+DOM.updateBalance()
