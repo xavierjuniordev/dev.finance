@@ -15,35 +15,39 @@ const Modal = {
         .classList
         .remove('active')
       }
-  }
+}
 
-  const transactions = [
-  {
-      id: 1,
-      description: 'Energia',
-      amount: -200000,
-      date: '14/09/2021',
-  },
-  {
-      id: 2,
-      description: 'Aluguel',
-      amount: 50000,
-      date: '12/09/2021',
-  },
-  {
-      id: 3,
-      description: 'Internet',
-      amount: -10000,
-      date: '10/09/2021',
-  },
 
-]
-
-  const Transaction = {
-    all: transactions,
+const Transaction = {
+    all:  [
+      {    
+          description: 'Energia',
+          amount: -200000,
+          date: '14/09/2021',
+      },
+      {
+          description: 'Aluguel',
+          amount: 50000,
+          date: '12/09/2021',
+      },
+      {
+          description: 'Internet',
+          amount: -10000,
+          date: '10/09/2021',
+      },
+  
+],
 
     add(transaction) {
         Transaction.all.push(transaction)
+
+        App.reload()
+    },
+  
+    remove(index) {
+        Transaction.all.splice(index, 1)
+
+        App.reload()
     },
 
     incomes() {
@@ -78,9 +82,9 @@ const Modal = {
           //entradas - saídas
           return Transaction.incomes() + Transaction.expenses();
     }
-  }
+}
 
-  const DOM = {
+const DOM = {
     transactionsContainer: document.querySelector('#data-table tbody'),
 
     addTransaction(transaction, index) {
@@ -115,8 +119,12 @@ const Modal = {
       document
           .getElementById('totalDisplay')
           .innerHTML = Utils.formatCurrency(Transaction.total())
+    },
+
+    clearTransactions() {
+      DOM.transactionsContainer.innerHTML = ""
     }
-  }
+}
 
 const Utils = {
   formatCurrency(value) {
@@ -135,8 +143,66 @@ const Utils = {
   }
 }
 
-transactions.forEach(function(transaction) {
-  DOM.addTransaction(transaction)
-})
+const Form = {
+  description: document.querySelector('input#description'),
+  amount: document.querySelector('input#amount'),
+  date: document.querySelector('input#date'),
 
-DOM.updateBalance()
+  getValues() {
+    return {
+      description: Form.description.value,
+      amount: Form.amount.value,
+      date: Form.date.value
+    }
+  },
+ 
+  validateFields() {
+      const { description, amount, date} = Form.getValues()
+
+      if( description.trim() === "" || 
+          amount.trim() === "" ||
+          date.trim() === "" ) {
+              throw new Error("Por favor, preencha todos os campos")
+          }
+  },
+  submit(event) {
+      event.preventDefault()
+      // verificar se todas as informações foram preenchidas
+      
+
+      try {
+          Form.validateFields()
+          // formatar os dados para salvar
+          // Form.formatData()
+          // salvar
+          // apagar os dados do formulário
+          // modal feche
+          // atualizar a aplicação
+      } catch (error) {
+          alert(error.message)
+      }
+  }  
+}
+
+const App = {
+  init() {
+      
+      Transaction.all.forEach(transaction => {
+        DOM.addTransaction(transaction)
+      })
+
+      DOM.updateBalance()
+  },
+  reload() {
+    DOM.clearTransactions()
+    App.init()
+  },
+}
+
+App.init()
+
+
+
+
+
+
