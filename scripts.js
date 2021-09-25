@@ -17,26 +17,20 @@ const Modal = {
       }
 }
 
+const Storage = {
+  get() {
+    return JSON.parse(localStorage.getItem("dev.finances:transactions")) || 
+    []
+  },
+
+  set(transactions) {
+    localStorage.setItem("dev.finances:transactions", JSON.stringify
+    (transactions))
+  }
+}
 
 const Transaction = {
-    all:  [
-      {    
-          description: 'Energia',
-          amount: -200000,
-          date: '14/09/2021',
-      },
-      {
-          description: 'Aluguel',
-          amount: 50000,
-          date: '12/09/2021',
-      },
-      {
-          description: 'Internet',
-          amount: -10000,
-          date: '10/09/2021',
-      },
-  
-],
+    all: Storage.get(),
 
     add(transaction) {
         Transaction.all.push(transaction)
@@ -89,11 +83,13 @@ const DOM = {
 
     addTransaction(transaction, index) {
       const tr = document.createElement('tr')
-      tr.innerHTML = DOM.innerHTMLTransaction(transaction)
+      tr.innerHTML = DOM.innerHTMLTransaction(transaction, index)
+      tr.dataset.index = index
 
       DOM.transactionsContainer.appendChild(tr)
     },
-    innerHTMLTransaction(transaction) {
+
+    innerHTMLTransaction(transaction, index) {
       const CSSclass = transaction.amount > 0 ? "income" : "expense"
 
       const amount = Utils.formatCurrency(transaction.amount)
@@ -103,7 +99,7 @@ const DOM = {
       <td class="${CSSclass}">${amount}</td>
       <td class="date">${transaction.date}</td>
       <td>
-        <img src="./assets/minus.svg" alt="Remover Transação">
+        <img onclick="Transaction.remove(${index})" src="./assets/minus.svg" alt="Remover Transação">
       </td>
       `
       return html
@@ -191,18 +187,26 @@ const Form = {
     }
   },
 
+  clearFields() {
+    Form.description.value = ""
+    Form.amount.value = ""
+    Form.date.value = ""
+  },
 
   submit(event) {
       event.preventDefault()
       // verificar se todas as informações foram preenchidas
-      
 
       try {
           Form.validateFields()
           // formatar os dados para salvar
           const transaction = Form.formatValues()
           // salvar
+          Transaction.add(transaction)
           // apagar os dados do formulário
+          Form.clearFields()
+          Modal.close()
+
           // modal feche
           // atualizar a aplicação
       } catch (error) {
@@ -214,12 +218,13 @@ const Form = {
 const App = {
   init() {
       
-      Transaction.all.forEach(transaction => {
-        DOM.addTransaction(transaction)
-      })
+      Transaction.all.forEach(DOM.addTransaction)
 
       DOM.updateBalance()
+
+      Storage.set(Transaction.all)
   },
+
   reload() {
     DOM.clearTransactions()
     App.init()
